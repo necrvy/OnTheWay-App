@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { TabType, ReadingDay, Devotional, User, GCEURanking, MemberRanking } from './types';
 import { generatePlan2026, MOCK_GCEU_RANKING, MOCK_MEMBER_RANKING } from './constants';
-import { getDailyDevotional, askBibleAssistant } from './services/geminiService';
+import { getDailyDevotional } from './services/geminiService';
 import Layout from './components/Layout';
 
 const App: React.FC = () => {
@@ -13,7 +13,8 @@ const App: React.FC = () => {
   const [devotional, setDevotional] = useState<Devotional | null>(null);
   const [loadingDevo, setLoadingDevo] = useState(false);
   const [showFullRanking, setShowFullRanking] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('otw_theme') === 'dark';
   });
@@ -21,19 +22,14 @@ const App: React.FC = () => {
     return localStorage.getItem('otw_notifications') === 'true';
   });
   
-  // Auth & Profile Form State
-  const [authName, setAuthName] = useState('');
+  // Profile Form State
+  const [editName, setEditName] = useState('');
+  const [editGceu, setEditGceu] = useState('');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
-  const [authGceu, setAuthGceu] = useState('');
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Chat State
-  const [chatInput, setChatInput] = useState('');
-  const [chatHistory, setChatHistory] = useState<{role: 'user' | 'ai', text: string}[]>([]);
-  const [isAnswering, setIsAnswering] = useState(false);
   const [viewingMonth, setViewingMonth] = useState(0);
 
   // Sync Dark Mode with DOM
@@ -52,8 +48,8 @@ const App: React.FC = () => {
     if (savedUser) {
       const user = JSON.parse(savedUser);
       setCurrentUser(user);
-      setAuthName(user.name);
-      setAuthGceu(user.gceu);
+      setEditName(user.name);
+      setEditGceu(user.gceu);
       setProfileAvatar(user.avatar || null);
     }
 
@@ -81,10 +77,6 @@ const App: React.FC = () => {
     if (permission === "granted") {
       setNotificationsEnabled(true);
       localStorage.setItem('otw_notifications', 'true');
-      new Notification("On The Way", {
-        body: "Lembretes ativados! Vamos caminhar juntos na Palavra.",
-        icon: "logo.png"
-      });
     } else {
       alert("Permissão de notificação negada.");
     }
@@ -102,12 +94,12 @@ const App: React.FC = () => {
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegistering) {
-      if (!authName || !authEmail || !authPassword || !authGceu) return;
+      if (!editName || !authEmail || !authPassword || !editGceu) return;
       const newUser: User = { 
         id: Date.now().toString(), 
-        name: authName, 
+        name: editName, 
         email: authEmail, 
-        gceu: authGceu,
+        gceu: editGceu,
         avatar: profileAvatar || undefined
       };
       setCurrentUser(newUser);
@@ -125,13 +117,13 @@ const App: React.FC = () => {
     if (!currentUser) return;
     const updatedUser = { 
       ...currentUser, 
-      name: authName, 
-      gceu: authGceu, 
+      name: editName, 
+      gceu: editGceu, 
       avatar: profileAvatar || undefined 
     };
     setCurrentUser(updatedUser);
     localStorage.setItem('otw_user', JSON.stringify(updatedUser));
-    setIsProfileOpen(false);
+    setIsEditingProfile(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,7 +192,6 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // Lógica de Pontos: 2 em dia, 1 atrasado
   const currentPoints = useMemo(() => {
     return plan.reduce((acc, day) => {
       if (!day.isCompleted) return acc;
@@ -222,7 +213,6 @@ const App: React.FC = () => {
     });
   }, [plan, viewingMonth]);
 
-  // Ranking Denso (Empates sucessivos: 1, 1, 1, 2, 2...)
   const sortedRanking = useMemo(() => {
     const list = [...MOCK_MEMBER_RANKING];
     if (currentUser) {
@@ -250,22 +240,6 @@ const App: React.FC = () => {
     }
     return list;
   }, [currentUser, currentPoints, progress]);
-
-  const handleAsk = async () => {
-    if (!chatInput.trim() || isAnswering) return;
-    const question = chatInput;
-    setChatInput('');
-    setChatHistory(prev => [...prev, { role: 'user', text: question }]);
-    setIsAnswering(true);
-    try {
-      const answer = await askBibleAssistant(question, todayReading?.title || "Bíblia");
-      setChatHistory(prev => [...prev, { role: 'ai', text: answer }]);
-    } catch (e) {
-      setChatHistory(prev => [...prev, { role: 'ai', text: "Ocorreu um erro." }]);
-    } finally {
-      setIsAnswering(false);
-    }
-  };
 
   const LogoComponent = ({ className }: { className: string }) => (
     <div className={`${className} bg-black rounded-full flex items-center justify-center overflow-hidden border border-white/10 shadow-lg`}>
@@ -301,19 +275,15 @@ const App: React.FC = () => {
                         <span className="text-slate-300 dark:text-zinc-700 font-serif text-2xl">W</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    </div>
                   </button>
-                  <span className="text-[10px] text-slate-600 dark:text-zinc-600 font-bold uppercase text-center w-full">Foto de Perfil</span>
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                 </div>
                 <input 
-                  type="text" required placeholder="Nome Completo" value={authName} onChange={e => setAuthName(e.target.value)}
+                  type="text" required placeholder="Nome Completo" value={editName} onChange={e => setEditName(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white placeholder:text-slate-500"
                 />
                 <input 
-                  type="text" required placeholder="Seu GCEU" value={authGceu} onChange={e => setAuthGceu(e.target.value)}
+                  type="text" required placeholder="Seu GCEU" value={editGceu} onChange={e => setEditGceu(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white placeholder:text-slate-500"
                 />
               </>
@@ -352,116 +322,9 @@ const App: React.FC = () => {
     <Layout 
       activeTab={activeTab} 
       setActiveTab={setActiveTab} 
-      onLogout={handleLogout} 
       user={currentUser}
-      onOpenProfile={() => setIsProfileOpen(true)}
       isDarkMode={isDarkMode}
-      toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
     >
-      {/* Profile Modal */}
-      {isProfileOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsProfileOpen(false)} />
-          <div className="relative bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in duration-300 border dark:border-white/10 overflow-y-auto max-h-[90vh]">
-            <h2 className="text-2xl font-serif font-bold text-black dark:text-white mb-6 text-center">Configurações</h2>
-            
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
-              <div className="flex flex-col items-center gap-2 mb-4">
-                <button 
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-24 h-24 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 shadow-md flex items-center justify-center overflow-hidden relative group"
-                >
-                  {profileAvatar ? (
-                    <img src={profileAvatar} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-zinc-800">
-                       <span className="text-slate-300 dark:text-zinc-700 font-serif text-3xl">W</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
-                    MUDAR
-                  </div>
-                </button>
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-600 uppercase ml-1">Nome</label>
-                  <input 
-                    type="text" value={authName} onChange={setAuthName}
-                    className="w-full bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-600 uppercase ml-1">GCEU</label>
-                  <input 
-                    type="text" value={authGceu} onChange={setAuthGceu}
-                    className="w-full bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg text-black dark:text-white">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-black dark:text-white block">Lembretes Diários</span>
-                        <span className="text-[10px] text-slate-600">Notificações de leitura</span>
-                      </div>
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={toggleNotifications}
-                      className={`w-10 h-6 rounded-full transition-colors relative ${notificationsEnabled ? 'bg-black dark:bg-white' : 'bg-slate-300 dark:bg-zinc-800'}`}
-                    >
-                      <div className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-all ${notificationsEnabled ? 'translate-x-4 bg-white dark:bg-black' : 'bg-white'}`} />
-                    </button>
-                 </div>
-
-                 <a 
-                   href="https://instagram.com/ontheway_imwg" 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   className="flex items-center justify-between p-1 group"
-                 >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg text-black dark:text-white group-hover:scale-110 transition-transform">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.247 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.247-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.975-.975-1.247-2.242-1.308-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608.975-.975 2.242-1.247 3.608-1.308 1.266-.058-1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.058-1.281.072-1.689.072-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.058-1.689-.072-4.948-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-black dark:text-white block">Siga-nos</span>
-                        <span className="text-[10px] text-slate-600">@ontheway_imwg</span>
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                 </a>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button 
-                  type="button" onClick={() => setIsProfileOpen(false)}
-                  className="flex-1 px-4 py-3 text-sm font-bold text-slate-600 hover:text-black transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-lg"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {activeTab === 'daily' && (
         <div className="space-y-6 animate-in fade-in duration-500">
           <section className="bg-black dark:bg-zinc-900 rounded-3xl p-6 text-white shadow-xl shadow-slate-300 dark:shadow-none relative overflow-hidden border border-white/5 transition-colors">
@@ -653,51 +516,181 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'insights' && (
-        <div className="h-full flex flex-col animate-in slide-in-from-right-10 duration-500 min-h-[60vh]">
-          <div className="mb-4">
-            <h2 className="text-xl font-serif font-bold text-black dark:text-white">Assistente Bíblico</h2>
-            <p className="text-xs text-slate-700 dark:text-zinc-500">Mergulhe nas escrituras com IA.</p>
-          </div>
-          <div className="flex-1 bg-slate-50 dark:bg-zinc-900/50 rounded-3xl p-4 space-y-4 min-h-[300px] overflow-y-auto mb-4 border border-slate-200 dark:border-zinc-900">
-            {chatHistory.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                <LogoComponent className="w-20 h-20 mb-6" />
-                <p className="text-slate-600 dark:text-zinc-600 text-xs font-bold uppercase tracking-wider">Como posso ajudar na sua jornada hoje?</p>
+      {activeTab === 'profile' && (
+        <div className="space-y-8 animate-in slide-in-from-right-10 duration-500 max-w-md mx-auto">
+          {!isEditingProfile ? (
+            <>
+              <div className="flex flex-col items-center">
+                <div className="w-32 h-32 rounded-full bg-slate-100 dark:bg-zinc-900 border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden relative mb-4">
+                  {profileAvatar ? (
+                    <img src={profileAvatar} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-slate-400 dark:text-zinc-600 font-serif text-5xl">W</span>
+                    </div>
+                  )}
+                </div>
+                <h2 className="text-2xl font-serif font-bold text-black dark:text-white">{currentUser.name}</h2>
+                <p className="text-sm font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest">{currentUser.gceu}</p>
+                
+                <button 
+                  onClick={() => setIsEditingProfile(true)}
+                  className="mt-6 flex items-center gap-2 px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform active:scale-95"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Editar Perfil
+                </button>
               </div>
-            )}
-            {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed border transition-all ${msg.role === 'user' ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white rounded-br-none' : 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-300 border-slate-300 dark:border-zinc-800 rounded-bl-none'}`}>
-                  {msg.text}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-zinc-950 p-4 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-black dark:text-white">{currentPoints}</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Meus Pontos</span>
+                </div>
+                <div className="bg-white dark:bg-zinc-950 p-4 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-black dark:text-white">{progress}%</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progresso</span>
                 </div>
               </div>
-            ))}
-            {isAnswering && <div className="text-slate-600 dark:text-zinc-600 text-[9px] font-bold uppercase animate-pulse ml-2">Analisando as escrituras...</div>}
-          </div>
-          <div className="flex gap-2">
-            <input 
-              type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} 
-              onKeyDown={e => e.key === 'Enter' && handleAsk()} 
-              placeholder="Pergunte sobre a leitura..." 
-              className="flex-1 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none shadow-sm transition-all placeholder:text-slate-500 dark:placeholder:text-zinc-700 dark:text-white" 
-            />
-            <button 
-              onClick={handleAsk} disabled={isAnswering} 
-              className="bg-black dark:bg-white text-white dark:text-black p-4 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-lg active:scale-95 disabled:opacity-30"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-            </button>
-          </div>
+
+              <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 border border-slate-100 dark:border-zinc-900 shadow-sm space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-black dark:text-white block">E-mail</span>
+                        <span className="text-[10px] text-slate-500">{currentUser.email}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 dark:border-zinc-900 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-black dark:text-white block">Modo Escuro</span>
+                        <span className="text-[10px] text-slate-500">Tema do aplicativo</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsDarkMode(!isDarkMode)}
+                      className={`w-10 h-6 rounded-full transition-colors relative ${isDarkMode ? 'bg-black dark:bg-white' : 'bg-slate-200 dark:bg-zinc-800'}`}
+                    >
+                      <div className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-all ${isDarkMode ? 'translate-x-4 bg-white dark:bg-black' : 'bg-white'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-black dark:text-white block">Lembretes Diários</span>
+                        <span className="text-[10px] text-slate-500">Notificações push</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={toggleNotifications}
+                      className={`w-10 h-6 rounded-full transition-colors relative ${notificationsEnabled ? 'bg-black dark:bg-white' : 'bg-slate-200 dark:bg-zinc-800'}`}
+                    >
+                      <div className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-all ${notificationsEnabled ? 'translate-x-4 bg-white dark:bg-black' : 'bg-white'}`} />
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 py-4 text-rose-500 font-bold text-sm border border-rose-50 dark:border-rose-900/10 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-900/5 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    Sair da Conta
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <button 
+                  onClick={() => setIsEditingProfile(false)}
+                  className="p-2 text-slate-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </button>
+                <h2 className="text-xl font-serif font-bold text-black dark:text-white">Editar Perfil</h2>
+                <div className="w-10" /> {/* Spacer */}
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-24 h-24 rounded-full bg-slate-100 dark:bg-zinc-900 border-2 border-dashed border-slate-300 dark:border-zinc-800 flex items-center justify-center overflow-hidden relative group"
+                >
+                  {profileAvatar ? (
+                    <img src={profileAvatar} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                    </div>
+                  )}
+                </button>
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Toque para mudar a foto</span>
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+              </div>
+
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <div className="space-y-4 bg-white dark:bg-zinc-950 p-6 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-500 uppercase ml-1 block mb-1">Nome</label>
+                    <input 
+                      type="text" value={editName} onChange={e => setEditName(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-500 uppercase ml-1 block mb-1">GCEU</label>
+                    <input 
+                      type="text" value={editGceu} onChange={e => setEditGceu(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm focus:ring-1 focus:ring-black dark:focus:ring-white outline-none dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditingProfile(false)}
+                    className="flex-1 px-4 py-4 rounded-2xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 bg-black dark:bg-white text-white dark:text-black font-bold py-4 rounded-2xl hover:opacity-90 transition-opacity shadow-lg"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
           
-          <div className="mt-4 text-center">
+          <div className="text-center pt-4">
             <a 
               href="https://instagram.com/ontheway_imwg" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-700 dark:text-zinc-600 uppercase tracking-widest hover:text-black dark:hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 dark:text-zinc-700 uppercase tracking-widest hover:text-black dark:hover:text-white transition-colors"
             >
-              Caminhe conosco no Instagram @ontheway_imwg
+              @ontheway_imwg
             </a>
           </div>
         </div>

@@ -32,7 +32,7 @@ export interface MemberRanking {
   avatar?: string;
 }
 
-export type TabType = 'daily' | 'plan' | 'ranking' | 'insights';
+export type TabType = 'daily' | 'plan' | 'ranking' | 'profile';
 
 export interface Devotional {
   title: string;

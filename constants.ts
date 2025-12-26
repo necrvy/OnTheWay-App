@@ -1,0 +1,66 @@
+
+import { ReadingDay, GCEURanking, MemberRanking } from './types';
+
+export const RAW_PLAN_DATA: Record<string, string[]> = {
+  "Janeiro": ["Mt 1-4", "Mt 5-7", "Mt 8-11", "Mt 12-15", "Mt 16-19", "Mt 20-22", "Mt 23-25", "Mt 26-28", "Mc 1-3", "Mc 4-6", "Mc 7-10", "Mc 11-13", "Mc 14-16", "Lc 1-3", "Lc 4-6", "Lc 7-9", "Lc 10-13", "Lc 14-17", "Lc 18-21", "Lc 22-24", "Jo 1-3", "Jo 4-6", "Jo 7-10", "Jo 11-13", "Jo 14-17", "Jo 18-21", "At 1-4", "At 5-7", "At 8-9", "At 10-12", "At 13-14"],
+  "Fevereiro": ["At 15-18", "At 19", "At 20", "At 21-22", "At 23-25", "At 26-28", "Rm 1-4", "Rm 5-8", "Rm 9-11", "Rm 12-16", "1Co 1-4", "1Co 5-8", "1Co 9-12", "1Co 13-16", "2Co 1-3", "2Co 4-6", "2Co 7-9", "2Co 10-13", "Gl 1-3", "Gl 4-6", "Ef 1-3", "Ef 4-6", "Fp 1-4", "Cl 1-4", "1Ts 1-5", "2Ts 1-3", "Tg 1-2", "Tg 3-5", "Hb 1-4", "Hb 5-7"],
+  "Março": ["Hb 8-10", "Hb 11-13", "Fm / 1Pe 1-2", "1Pe 3-5", "2Pe 1-3", "1Tm 1-3", "1Tm 4-6", "Tt 1-3", "2Tm 1-4", "1Jo 1-2", "1Jo 3-5", "2Jo / 3Jo / Jd", "Ap 1-3", "Ap 4-6", "Ap 7-9", "Ap 10-12", "Ap 13-15", "Ap 16-18", "Ap 19-22", "Gn 1-3", "Gn 4-7", "Gn 8-11", "Gn 12-15", "Gn 16-18", "Gn 19-21", "Gn 22-24", "Gn 25-26", "Gn 27-29", "Gn 30-31", "Gn 32-34", "Gn 35-37"],
+  "Abril": ["Gn 38-40", "Gn 41-42", "Gn 43-45", "Gn 46-47", "Gn 48-50", "Êx 1-3", "Êx 4-6", "Êx 7-9", "Êx 10-12", "Êx 13-15", "Êx 16-18", "Êx 19-21", "Êx 22-24", "Êx 25-27", "Êx 28-29", "Êx 30-32", "Êx 33-35", "Êx 36-38", "Êx 39-40", "Lv 1-4", "Lv 5-7", "Lv 8-10", "Lv 11-13", "Lv 14-15", "Lv 16-18", "Lv 19-21", "Lv 22-23", "Lv 24-25", "Lv 26-27", "Nm 1-2"],
+  "Maio": ["Nm 3-4", "Nm 5-6", "Nm 7", "Nm 8-10", "Nm 11-13", "Nm 14-15", "Nm 16-17", "Nm 18-20", "Nm 21-22", "Nm 23-25", "Nm 26-27", "Nm 28-30", "Nm 31-32", "Nm 33-34", "Nm 35-36", "Dt 1-2", "Dt 3-4", "Dt 5-7", "Dt 8-10", "Dt 11-13", "Dt 14-16", "Dt 17-20", "Dt 21-23", "Dt 24-27", "Dt 28", "Dt 29-30", "Dt 31-32", "Dt 33-34", "Js 1-3", "Js 4-6", "Js 7-9"],
+  "Junho": ["Js 10-12", "Js 13-15", "Js 16-18", "Js 19-21", "Js 22-24", "Jz 1-3", "Jz 4-5", "Jz 6-7", "Jz 8-9", "Jz 10-12", "Jz 13-15", "Jz 16-18", "Jz 19-21", "Rt", "1Sm 1-3", "1Sm 4-8", "1Sm 9-12", "1Sm 13-15", "1Sm 16-17", "1Sm 18-20", "1Sm 21-24", "1Sm 25-27", "1Sm 28-31", "2Sm 1-3", "2Sm 4-7", "2Sm 8-10", "2Sm 11-13", "2Sm 14-15", "2Sm 16-18", "2Sm 19-20"],
+  "Julho": ["2Sm 21-22", "2Sm 23-24", "1Rs 1-2", "1Rs 3-5", "1Rs 6-7", "1Rs 8-9", "1Rs 10-11", "1Rs 12-14", "1Rs 15-17", "1Rs 18-20", "1Rs 21-22", "2Rs 1-3", "2Rs 4-5", "2Rs 6-8", "2Rs 9-10", "2Rs 11-13", "2Rs 14-15", "2Rs 16-17", "2Rs 18-19", "2Rs 20-22", "2Rs 23-25", "1Cr 1-2", "1Cr 3-5", "1Cr 6-7", "1Cr 8-9", "1Cr 10-12", "1Cr 13-15", "1Cr 16-18", "1Cr 19-21", "1Cr 22-24", "1Cr 25-27"],
+  "Agosto": ["1Cr 28-29", "2Cr 1-4", "2Cr 5-7", "2Cr 8-10", "2Cr 11-14", "2Cr 15-17", "2Cr 18-20", "2Cr 21-24", "2Cr 25-27", "2Cr 28-31", "2Cr 32-34", "2Cr 35-36", "Ed 1-2", "Ed 3-4", "Ed 5-6", "Ed 7-8", "Ed 9-10", "Ne 1-3", "Ne 4-6", "Ne 7-9", "Ne 10-11", "Ne 12-13", "Et 1-3", "Et 4-6", "Et 7-10", "Jó 1-3", "Jó 4-6", "Jó 7-9", "Jó 10-12", "Jó 13-15", "Jó 16-18"],
+  "Setembro": ["Jó 19-21", "Jó 22-24", "Jó 25-27", "Jó 28-30", "Jó 31-33", "Jó 34-36", "Jó 37-39", "Jó 40-42", "Sl 1-8", "Sl 9-16", "Sl 17-20", "Sl 21-25", "Sl 26-30", "Sl 31-34", "Sl 35-37", "Sl 38-41", "Sl 42-46", "Sl 47-51", "Sl 52-59", "Sl 60-67", "Sl 68-71", "Sl 72-77", "Sl 78-79", "Sl 80-85", "Sl 86-89", "Sl 90-95", "Sl 96-102", "Sl 103-105", "Sl 106-107", "Sl 108-114"],
+  "Outubro": ["Sl 115-118", "Sl 119:1-48", "Sl 119:49-104", "Sl 119:105-176", "Sl 120-127", "Sl 128-134", "Sl 135-139", "Sl 140-145", "Sl 146-150", "Pv 1-4", "Pv 5-8", "Pv 9-12", "Pv 13-15", "Pv 16-18", "Pv 19-21", "Pv 22-24", "Pv 25-27", "Pv 28-31", "Ec 1-4", "Ec 5-8", "Ec 9-12", "Ct 1-4", "Ct 5-8", "Is 1-4", "Is 5-8", "Is 9-12", "Is 13-17", "Is 18-22", "Is 23-27", "Is 28-30"],
+  "Novembro": ["Is 31-35", "Is 36-39", "Is 40-43", "Is 44-48", "Is 49-53", "Is 54-58", "Is 59-63", "Is 64-66", "Jr 1-3", "Jr 4-6", "Jr 7-9", "Jr 10-13", "Jr 14-17", "Jr 18-22", "Jr 23-25", "Jr 26-29", "Jr 30-32", "Jr 33-36", "Jr 37-39", "Jr 40-42", "Jr 43-45", "Jr 46-48", "Jr 49-50", "Jr 51-52", "Lm 1-2", "Lm 3-5", "Ez 1-4", "Ez 5-8", "Ez 9-12", "Ez 13-15"],
+  "Dezembro": ["Ez 16-18", "Ez 19-21", "Ez 22-24", "Ez 25-27", "Ez 28-30", "Ez 31-33", "Ez 34-36", "Ez 37-39", "Ez 40-42", "Ez 43-45", "Ez 46-48", "Dn 1-3", "Dn 4-6", "Dn 7-9", "Dn 10-12", "Os 1-7", "Os 8-14", "Jl 1-3", "Am 1-5", "Am 6-9", "Ob / Mi", "Jn 1-4", "Mq 1-4", "Mq 5-7", "Na 1-3", "Hc 1-3", "Sf 1-3", "Ag 1-2", "Zc 1-6", "Zc 7-10", "Zc 11-14"]
+};
+
+export const generatePlan2026 = (): ReadingDay[] => {
+  const plan: ReadingDay[] = [];
+  const monthOrder = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  
+  monthOrder.forEach((monthName, mIdx) => {
+    const readings = RAW_PLAN_DATA[monthName];
+    const daysInMonth = new Date(2026, mIdx + 1, 0).getDate();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      let readingTitle = readings[day - 1];
+      if (day === daysInMonth && readings.length > daysInMonth) {
+        const remaining = readings.slice(daysInMonth - 1).join(" + ");
+        readingTitle = remaining;
+      }
+      if (!readingTitle) readingTitle = "Leitura Livre";
+
+      const dateStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      plan.push({
+        date: dateStr,
+        title: readingTitle,
+        chapters: [readingTitle],
+        isCompleted: false,
+      });
+    }
+  });
+  return plan;
+};
+
+export const MOCK_GCEU_RANKING: GCEURanking[] = [
+  { name: 'GCEU Shalom', avgPoints: 85, memberCount: 15, rank: 1 },
+  { name: 'GCEU Ágape', avgPoints: 85, memberCount: 12, rank: 1 },
+  { name: 'GCEU Rocha Eterna', avgPoints: 72, memberCount: 18, rank: 3 },
+  { name: 'GCEU Monte Sião', avgPoints: 65, memberCount: 10, rank: 4 },
+  { name: 'GCEU Betel', avgPoints: 50, memberCount: 14, rank: 5 },
+];
+
+export const MOCK_MEMBER_RANKING: MemberRanking[] = [
+  { name: 'Juliana Costa', gceu: 'GCEU Shalom', points: 120, progress: 100, streak: 52 },
+  { name: 'Marcos Oliveira', gceu: 'GCEU Rocha Eterna', points: 120, progress: 98, streak: 48 },
+  { name: 'Ana Silva', gceu: 'GCEU Ágape', points: 120, progress: 96, streak: 45 },
+  { name: 'Ricardo Santos', gceu: 'GCEU Shalom', points: 112, progress: 95, streak: 42 },
+  { name: 'Beatriz Lima', gceu: 'GCEU Monte Sião', points: 108, progress: 94, streak: 40 },
+  { name: 'Gabriel Souza', gceu: 'GCEU Betel', points: 108, progress: 92, streak: 38 },
+  { name: 'Letícia Ferreira', gceu: 'GCEU Shalom', points: 100, progress: 90, streak: 37 },
+  { name: 'Tiago Mendes', gceu: 'GCEU Rocha Eterna', points: 98, progress: 89, streak: 35 },
+  { name: 'Camila Rocha', gceu: 'GCEU Ágape', points: 95, progress: 88, streak: 33 },
+  { name: 'Felipe Alvares', gceu: 'GCEU Monte Sião', points: 92, progress: 87, streak: 31 }
+];

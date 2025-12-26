@@ -1,0 +1,8 @@
+{
+  "name": "On The Way - App",
+  "description": "App oficial da comunidad On The Way para acompanhamento do plano anual de leitura bíblica 2026, com insights gerados por IA e dashboard de progresso.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

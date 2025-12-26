@@ -138,8 +138,11 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('otw_user');
+    if (window.confirm("Deseja realmente sair da conta?")) {
+      setCurrentUser(null);
+      localStorage.removeItem('otw_user');
+      setActiveTab('daily');
+    }
   };
 
   const getTodayDateStr = useCallback(() => {
@@ -324,6 +327,7 @@ const App: React.FC = () => {
       setActiveTab={setActiveTab} 
       user={currentUser}
       isDarkMode={isDarkMode}
+      onLogout={handleLogout}
     >
       {activeTab === 'daily' && (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -535,7 +539,7 @@ const App: React.FC = () => {
                 
                 <button 
                   onClick={() => setIsEditingProfile(true)}
-                  className="mt-6 flex items-center gap-2 px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform active:scale-95"
+                  className="mt-6 flex items-center gap-2 px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold text-[10px] uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 shadow-lg shadow-black/5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   Editar Perfil
@@ -543,13 +547,13 @@ const App: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-zinc-950 p-4 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
+                <div className="bg-white dark:bg-zinc-950 p-5 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
                   <span className="text-2xl font-bold text-black dark:text-white">{currentPoints}</span>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Meus Pontos</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Meus Pontos</span>
                 </div>
-                <div className="bg-white dark:bg-zinc-950 p-4 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
+                <div className="bg-white dark:bg-zinc-950 p-5 rounded-3xl border border-slate-100 dark:border-zinc-900 shadow-sm flex flex-col items-center justify-center">
                   <span className="text-2xl font-bold text-black dark:text-white">{progress}%</span>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progresso</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Progresso</span>
                 </div>
               </div>
 
@@ -557,11 +561,11 @@ const App: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between group">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white group-hover:scale-110 transition-transform">
+                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white group-hover:scale-110 transition-transform">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-black dark:text-white block">E-mail</span>
+                        <span className="text-xs font-bold text-black dark:text-white block leading-tight">E-mail</span>
                         <span className="text-[10px] text-slate-500">{currentUser.email}</span>
                       </div>
                     </div>
@@ -571,11 +575,11 @@ const App: React.FC = () => {
                 <div className="pt-4 border-t border-slate-100 dark:border-zinc-900 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
+                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-black dark:text-white block">Modo Escuro</span>
+                        <span className="text-xs font-bold text-black dark:text-white block leading-tight">Modo Escuro</span>
                         <span className="text-[10px] text-slate-500">Tema do aplicativo</span>
                       </div>
                     </div>
@@ -589,11 +593,11 @@ const App: React.FC = () => {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
+                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-xl text-black dark:text-white">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-black dark:text-white block">Lembretes Diários</span>
+                        <span className="text-xs font-bold text-black dark:text-white block leading-tight">Lembretes Diários</span>
                         <span className="text-[10px] text-slate-500">Notificações push</span>
                       </div>
                     </div>
@@ -607,7 +611,7 @@ const App: React.FC = () => {
 
                   <button 
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 py-4 text-rose-500 font-bold text-sm border border-rose-50 dark:border-rose-900/10 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-900/5 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-4 text-rose-500 font-bold text-xs uppercase tracking-widest border border-rose-50 dark:border-rose-900/10 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-900/5 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                     Sair da Conta
@@ -625,7 +629,7 @@ const App: React.FC = () => {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 </button>
                 <h2 className="text-xl font-serif font-bold text-black dark:text-white">Editar Perfil</h2>
-                <div className="w-10" /> {/* Spacer */}
+                <div className="w-10" /> 
               </div>
 
               <div className="flex flex-col items-center gap-4">
@@ -674,7 +678,7 @@ const App: React.FC = () => {
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 bg-black dark:bg-white text-white dark:text-black font-bold py-4 rounded-2xl hover:opacity-90 transition-opacity shadow-lg"
+                    className="flex-1 bg-black dark:bg-white text-white dark:text-black font-bold py-4 rounded-2xl hover:opacity-90 transition-opacity shadow-lg shadow-black/10"
                   >
                     Salvar
                   </button>

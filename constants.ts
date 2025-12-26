@@ -1,5 +1,5 @@
 
-import { ReadingDay, GCEURanking, MemberRanking } from './types';
+import { ReadingDay } from './types';
 
 export const RAW_PLAN_DATA: Record<string, string[]> = {
   "Janeiro": ["Mt 1-4", "Mt 5-7", "Mt 8-11", "Mt 12-15", "Mt 16-19", "Mt 20-22", "Mt 23-25", "Mt 26-28", "Mc 1-3", "Mc 4-6", "Mc 7-10", "Mc 11-13", "Mc 14-16", "Lc 1-3", "Lc 4-6", "Lc 7-9", "Lc 10-13", "Lc 14-17", "Lc 18-21", "Lc 22-24", "Jo 1-3", "Jo 4-6", "Jo 7-10", "Jo 11-13", "Jo 14-17", "Jo 18-21", "At 1-4", "At 5-7", "At 8-9", "At 10-12", "At 13-14"],
@@ -43,24 +43,3 @@ export const generatePlan2026 = (): ReadingDay[] => {
   });
   return plan;
 };
-
-export const MOCK_GCEU_RANKING: GCEURanking[] = [
-  { name: 'GCEU Shalom', avgPoints: 85, memberCount: 15, rank: 1 },
-  { name: 'GCEU Ágape', avgPoints: 85, memberCount: 12, rank: 1 },
-  { name: 'GCEU Rocha Eterna', avgPoints: 72, memberCount: 18, rank: 3 },
-  { name: 'GCEU Monte Sião', avgPoints: 65, memberCount: 10, rank: 4 },
-  { name: 'GCEU Betel', avgPoints: 50, memberCount: 14, rank: 5 },
-];
-
-export const MOCK_MEMBER_RANKING: MemberRanking[] = [
-  { name: 'Juliana Costa', gceu: 'GCEU Shalom', points: 120, progress: 100, streak: 52 },
-  { name: 'Marcos Oliveira', gceu: 'GCEU Rocha Eterna', points: 120, progress: 98, streak: 48 },
-  { name: 'Ana Silva', gceu: 'GCEU Ágape', points: 120, progress: 96, streak: 45 },
-  { name: 'Ricardo Santos', gceu: 'GCEU Shalom', points: 112, progress: 95, streak: 42 },
-  { name: 'Beatriz Lima', gceu: 'GCEU Monte Sião', points: 108, progress: 94, streak: 40 },
-  { name: 'Gabriel Souza', gceu: 'GCEU Betel', points: 108, progress: 92, streak: 38 },
-  { name: 'Letícia Ferreira', gceu: 'GCEU Shalom', points: 100, progress: 90, streak: 37 },
-  { name: 'Tiago Mendes', gceu: 'GCEU Rocha Eterna', points: 98, progress: 89, streak: 35 },
-  { name: 'Camila Rocha', gceu: 'GCEU Ágape', points: 95, progress: 88, streak: 33 },
-  { name: 'Felipe Alvares', gceu: 'GCEU Monte Sião', points: 92, progress: 87, streak: 31 }
-];

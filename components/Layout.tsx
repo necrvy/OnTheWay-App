@@ -18,13 +18,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/10 shadow-lg shrink-0">
-               <span className="text-white font-serif font-bold text-xl mt-[-2px]">W</span>
+               <span className="text-white font-brand font-black text-xl">W</span>
             </div>
             <div className="min-w-0">
-              <h1 className="font-serif text-lg font-bold tracking-tight text-black dark:text-white leading-none truncate">
+              <h1 className="font-brand text-lg font-black tracking-tighter text-black dark:text-white leading-none truncate uppercase italic">
                 On The Way
               </h1>
-              <p className="text-[9px] text-slate-500 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">Plano Anual 2026</p>
+              <p className="text-[9px] text-slate-500 dark:text-zinc-500 font-bold uppercase tracking-wider mt-0.5">Plano Bíblico 2026</p>
             </div>
           </div>
           
@@ -61,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
             isActive={activeTab === 'daily'} 
             onClick={() => setActiveTab('daily')}
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
-            label="Hoje"
+            label="Início"
           />
           <NavButton 
             isActive={activeTab === 'plan'} 

@@ -3,8 +3,11 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Apenas para validação local
   gceu: string;
   avatar?: string;
+  points: number;
+  progress: number;
 }
 
 export interface ReadingDay {
@@ -12,8 +15,7 @@ export interface ReadingDay {
   title: string;
   chapters: string[];
   isCompleted: boolean;
-  completedAt?: string; // Data real em que foi marcado como concluído
-  notes?: string;
+  completedAt?: string;
 }
 
 export interface GCEURanking {
@@ -28,8 +30,8 @@ export interface MemberRanking {
   gceu: string;
   points: number;
   progress: number;
-  streak: number;
   avatar?: string;
+  rank?: number;
 }
 
 export type TabType = 'daily' | 'plan' | 'ranking' | 'profile';

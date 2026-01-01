@@ -11,14 +11,20 @@ interface LayoutProps {
   onLogout: () => void;
 }
 
+export const LogoOfficial = ({ className, textClassName }: { className?: string, textClassName?: string }) => (
+  <div className={`flex items-center justify-center bg-black dark:bg-white rounded-[22%] aspect-square overflow-hidden ${className}`}>
+    <span className={`text-white dark:text-black font-brand font-black italic select-none leading-none -translate-x-[12%] translate-y-[2%] ${textClassName || 'text-2xl'}`}>W</span>
+  </div>
+);
+
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user, isDarkMode, onLogout }) => {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black transition-colors duration-300">
-      <header className="bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 sticky top-0 z-10">
+      <header className="bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/10 shadow-lg shrink-0">
-               <span className="text-white font-brand font-black text-xl">W</span>
+            <div className="w-10 h-10 flex items-center justify-center shrink-0">
+               <LogoOfficial className="w-full h-full" />
             </div>
             <div className="min-w-0">
               <h1 className="font-brand text-lg font-black tracking-tighter text-black dark:text-white leading-none truncate uppercase italic">
@@ -55,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black/10 dark:border-white/10 py-3 z-20 shadow-lg transition-colors duration-300">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black/10 dark:border-white/10 py-3 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] transition-colors duration-300">
         <div className="max-w-md mx-auto flex justify-around items-center px-2">
           <NavButton 
             isActive={activeTab === 'daily'} 
@@ -90,10 +96,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
 const NavButton: React.FC<{ isActive: boolean; onClick: () => void; icon: React.ReactNode; label: string }> = ({ isActive, onClick, icon, label }) => (
   <button 
     onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-all ${isActive ? 'text-black dark:text-white scale-105' : 'text-slate-600 dark:text-zinc-600 hover:text-slate-800 dark:hover:text-zinc-400'}`}
+    className={`flex flex-col items-center gap-1 transition-all ${isActive ? 'text-black dark:text-white scale-110' : 'text-slate-400 dark:text-zinc-600 hover:text-slate-600 dark:hover:text-zinc-400'}`}
   >
-    {icon}
-    <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+    <div className={`p-1 rounded-lg transition-colors ${isActive ? 'bg-slate-50 dark:bg-zinc-900' : ''}`}>
+      {icon}
+    </div>
+    <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-60'}`}>{label}</span>
   </button>
 );
 

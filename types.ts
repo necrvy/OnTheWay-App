@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password?: string; // Apenas para validação local
+  password?: string;
   gceu: string;
   avatar?: string;
   points: number;
